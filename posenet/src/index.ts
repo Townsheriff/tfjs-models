@@ -15,6 +15,11 @@
  * =============================================================================
  */
 
+require('@tensorflow/tfjs');
+// Optional Load the binding:
+// Use '@tensorflow/tfjs-node-gpu' if running with GPU.
+require('@tensorflow/tfjs-node');
+
 import {CheckpointLoader} from './checkpoint_loader';
 import {ConvolutionDefinition, MobileNet, mobileNetArchitectures, MobileNetMultiplier, OutputStride} from './mobilenet';
 import {decodeMultiplePoses} from './multi_pose/decode_multiple_poses';

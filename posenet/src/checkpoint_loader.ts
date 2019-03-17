@@ -15,7 +15,8 @@
  * =============================================================================
  */
 
-import {Tensor} from '@tensorflow/tfjs';
+import { Tensor } from '@tensorflow/tfjs';
+import fetch from 'node-fetch';
 
 /**
  * @hidden
@@ -45,19 +46,10 @@ export class CheckpointLoader {
   }
 
   private loadManifest(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', this.urlPath + MANIFEST_FILE);
-
-      xhr.onload = () => {
-        this.checkpointManifest = JSON.parse(xhr.responseText);
-        resolve();
-      };
-      xhr.onerror = (error) => {
-        throw new Error(
-            `${MANIFEST_FILE} not found at ${this.urlPath}. ${error}`);
-      };
-      xhr.send();
+    return fetch(this.urlPath + MANIFEST_FILE).then(response => {
+      return response.json();
+    }).then(manifest => {
+      this.checkpointManifest = manifest;
     });
   }
 
@@ -109,24 +101,18 @@ export class CheckpointLoader {
 
     const variableRequestPromiseMethod =
         (resolve: (tensor: Tensor) => void, reject: () => void) => {
-          const xhr = new XMLHttpRequest();
-          xhr.responseType = 'arraybuffer';
-          const fname = this.checkpointManifest[varName].filename;
-          xhr.open('GET', this.urlPath + fname);
 
-          xhr.onload = () => {
-            if (xhr.status === 404) {
-              throw new Error(`Not found variable ${varName}`);
-            }
-            const values = new Float32Array(xhr.response);
+          const fname = this.checkpointManifest[varName].filename;
+
+          return fetch(this.urlPath + fname).then(response => {
+            return response.arrayBuffer();
+          }).then(buffer => {
+            const values = new Float32Array(buffer);
+
             const tensor =
                 Tensor.make(this.checkpointManifest[varName].shape, {values});
             resolve(tensor);
-          };
-          xhr.onerror = (error) => {
-            throw new Error(`Could not fetch variable ${varName}: ${error}`);
-          };
-          xhr.send();
+          });
         };
 
     if (this.checkpointManifest == null) {

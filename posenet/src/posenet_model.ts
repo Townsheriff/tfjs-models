@@ -257,7 +257,7 @@ export async function load(multiplier: MobileNetMultiplier = 1.01):
   if (tf == null) {
     throw new Error(
         `Cannot find TensorFlow.js. If you are using a <script> tag, please ` +
-        `also include @tensorflow/tfjs on the page before using this model.`);
+        `also include @tensorflow/tfjs-node-gpu on the page before using this model.`);
   }
   // TODO: figure out better way to decide below.
   const possibleMultipliers = Object.keys(checkpoints);
